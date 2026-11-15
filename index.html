@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Mediciones y presupuestos para estudios de arquitectura. Calcula cuánto os cuesta cada presupuesto y mira ejemplos de los planos de medición que entrego.">
+<title>Mediciones Borja Pérez</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: hoja de presupuesto — calculadora arriba como "partida" principal, luego columnas sobrias; amarillo de cinta métrica solo para resaltar cifras */
+:root{
+  --bg:#F2F3EF; --paper:#FFFFFF; --ink:#1C2629; --muted:#5B676A; --rule:#D5D9D2;
+  --wa:#25D366; --wa-ink:#FFFFFF; --tape:#F2C230; --tape-ink:#1C2629; --accent:#8A6A00;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141B1D; --paper:#1C2528; --ink:#E9ECE6; --muted:#9AA6A8; --rule:#2F3A3D;
+  --tape:#F2C230; --tape-ink:#1C2629; --accent:#F2C230; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#141B1D; --paper:#1C2528; --ink:#E9ECE6; --muted:#9AA6A8; --rule:#2F3A3D;
+  --tape:#F2C230; --tape-ink:#1C2629; --accent:#F2C230; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.6 var(--body);margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+section{padding-block:56px;border-top:1px solid var(--rule)}
+h1,h2,h3{font-family:var(--display);font-stretch:80%;line-height:1.05;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.3rem,6vw,4.2rem);font-weight:850;letter-spacing:-.01em}
+h2{font-size:clamp(1.6rem,3.6vw,2.4rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:700;font-stretch:90%}
+p{margin:0;max-width:62ch}
+.eyebrow{font:500 .78rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mark{background:var(--tape);color:var(--tape-ink);padding:0 .18em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+header.top{padding-block:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font:800 1.05rem/1 var(--display);font-stretch:85%;letter-spacing:.01em}
+.brand span{color:var(--muted);font-weight:500}
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:start;padding-block:40px 64px;border-top:0}
+.hero>*{min-width:0}
+.lead{font-size:1.15rem;color:var(--muted);margin-top:18px}
+/* calculadora */
+.calc{background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.calc-head{display:flex;justify-content:space-between;gap:8px;padding:12px 18px;border-bottom:1px solid var(--rule);font:500 .8rem/1.3 var(--mono);color:var(--muted)}
+.calc-body{padding:18px;display:grid;gap:16px}
+.field{display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:end}
+.field label{font-weight:500;line-height:1.35}
+.field small{grid-column:1/-1;color:var(--muted);font-size:.82rem;line-height:1.35;margin-top:-4px}
+.field output{font:500 1rem var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.field input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--ink);margin:0}
+.field input[type=range]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.result{border-top:2px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;background:var(--bg)}
+.res{padding:18px;display:grid;gap:6px;align-content:start;min-width:0}
+.res+.res{border-left:1px solid var(--rule)}
+.res-hit{background:color-mix(in srgb,var(--tape) 26%,var(--bg))}
+.big{font:850 clamp(1.9rem,4vw,2.5rem)/1 var(--display);font-stretch:80%;font-variant-numeric:tabular-nums}
+.res p{color:var(--muted);font-size:.9rem;line-height:1.45}
+.res strong{color:var(--ink)}
+.result3{grid-template-columns:1fr 1fr 1.2fr}
+.approx{font-family:var(--body);font-weight:600;font-size:.62em;display:inline-block;vertical-align:.18em;margin-right:.18em;color:var(--muted)}
+.result3 .big{font-size:clamp(1.5rem,2.6vw,2.1rem);white-space:nowrap}
+@media (max-width:480px){.result,.result3{grid-template-columns:1fr}.res+.res{border-left:0;border-top:1px solid var(--rule)}}
+.note{font-size:.8rem;color:var(--muted);padding:12px 18px 16px;background:var(--bg);border-top:1px solid var(--rule);line-height:1.45}
+/* extracto presupuesto */
+.sheet{background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow-x:auto;margin-top:28px}
+.sheet table{border-collapse:collapse;width:100%;min-width:560px;font:400 .82rem/1.45 var(--mono);font-variant-numeric:tabular-nums}
+.sheet th,.sheet td{padding:7px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top}
+.sheet th{font-weight:500;color:var(--muted);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase}
+.sheet td.r,.sheet th.r{text-align:right}
+.sheet tr.cap td{font-weight:500;background:var(--bg)}
+.sheet caption{caption-side:bottom;text-align:left;padding:8px 12px;color:var(--muted);font:400 .75rem var(--body)}
+/* rejillas */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:28px;margin-top:32px}
+.grid>div{display:grid;gap:8px;align-content:start;min-width:0}
+.grid p{color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.two>*{min-width:0}
+.compare{display:grid;gap:0;margin-top:24px;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--paper)}
+.compare .row{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rule)}
+.compare .row:last-child{border-bottom:0}
+.compare .row>div{padding:12px 16px;min-width:0}
+.compare .row>div+div{border-left:1px solid var(--rule)}
+.compare .hd{font:500 .75rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.steps{list-style:none;margin:28px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;gap:6px;align-content:start;padding-top:14px;border-top:2px solid var(--ink)}
+.steps li::before{content:"Paso " counter(s);font:500 .75rem var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.steps p{color:var(--muted)}
+.contact{display:grid;grid-template-columns:1.2fr .8fr;gap:32px;align-items:center}
+.contact>*{min-width:0}
+.card{background:var(--ink);color:var(--bg);border-radius:6px;padding:24px;display:grid;gap:14px}
+.card .who{font:800 1.4rem/1.1 var(--display);font-stretch:85%}
+.card .role{opacity:.75;font-size:.95rem}
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font:500 1rem var(--mono);border-top:1px solid color-mix(in srgb,var(--bg) 25%,transparent);padding-top:12px}
+.line span{user-select:all;overflow-wrap:anywhere}
+.copy{font:500 .8rem var(--body);background:var(--tape);color:var(--tape-ink);border:0;border-radius:4px;padding:6px 10px;cursor:pointer}
+.copy:focus-visible{outline:2px solid var(--bg);outline-offset:2px}
+/* planos con pestañas */
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:28px}
+.tab{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:4px 12px;padding:10px 12px;background:var(--bg);border:1px solid var(--rule);border-top:4px solid transparent;border-radius:6px 6px 0 0;cursor:pointer;text-align:left;color:var(--muted);font:inherit;transition:background .15s,color .15s}
+.tab img{grid-row:1/3;width:44px;height:32px;object-fit:cover;object-position:top left;border:1px solid var(--rule);border-radius:2px;background:#fff;opacity:.7}
+.tab small{font:500 .68rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.tab span{font:700 1.02rem/1.15 var(--display);font-stretch:85%;overflow-wrap:anywhere}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--paper);color:var(--ink);border-top-color:var(--tape)}
+.tab[aria-selected="true"] img{opacity:1}
+.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.viewer{margin-top:-1px;background:#fff;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.viewer img{display:block;width:100%;height:auto;max-width:100%}
+.viewer-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:.9rem;color:var(--muted)}
+.viewer-foot a{color:var(--ink);font-weight:500}
+@media (max-width:560px){.tabs{gap:6px}.tab{grid-template-columns:1fr;padding:8px}.tab img{display:none}.tab small{display:none}}
+/* servicio: misma paleta que el resto, estructura de entrada → entrega */
+.svc{display:grid;gap:32px}
+.svc-title{font-size:clamp(2rem,5vw,3.4rem);font-weight:850;max-width:22ch}
+.flow{display:grid;grid-template-columns:minmax(150px,.7fr) auto 3fr;gap:20px;align-items:stretch}
+.flow>*{min-width:0}
+.in{border:1px dashed var(--muted);border-radius:6px;padding:18px;display:grid;gap:12px;align-content:start}
+.in ul{list-style:none;margin:0;padding:0;display:grid;gap:8px;font:700 1.25rem/1.1 var(--display);font-stretch:85%}
+.arrow{align-self:center;font:800 2.4rem/1 var(--display);color:var(--ink)}
+.out{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.deliv{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.deliv h3{font-size:1.25rem}
+.deliv p{color:var(--muted);font-size:.95rem;line-height:1.5}
+.fmt{display:flex;gap:6px;flex-wrap:wrap}
+.fmt span{font:500 .75rem/1 var(--mono);letter-spacing:.06em;padding:5px 8px;border-radius:3px;background:var(--tape);color:var(--tape-ink)}
+.vs{border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--paper)}
+.vs-row{display:grid;grid-template-columns:1fr 1fr}
+.vs-row+.vs-row{border-top:1px solid var(--rule)}
+.vs-row>div{padding:14px 18px;min-width:0;display:flex;gap:10px;align-items:baseline}
+.vs-row>div:first-child{color:var(--muted)}
+.vs-row>div:first-child::before{content:"✕";color:var(--muted);flex:none}
+.vs-row>div:last-child{border-left:1px solid var(--rule);color:var(--ink);font-weight:500}
+.vs-row>div:last-child::before{content:"✓";color:var(--ink);background:var(--tape);border-radius:2px;padding:0 4px;font-weight:700;flex:none}
+.vs-head>div{font:500 .75rem/1.2 var(--mono)!important;letter-spacing:.08em;text-transform:uppercase;background:var(--bg)}
+.vs-head>div::before{content:none!important}
+.vs-head>div:first-child{color:var(--muted)!important}
+@media (max-width:820px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}.in ul{display:flex;flex-wrap:wrap;gap:8px 16px}}
+@media (max-width:560px){.out{grid-template-columns:1fr}.vs-row>div{padding:12px}}
+.wa{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--tape);color:var(--tape-ink);font:600 1rem/1 var(--body);text-decoration:none;padding:14px 16px;border-radius:6px}
+.wa:hover{filter:brightness(1.05)}
+.wa:focus-visible{outline:2px solid var(--bg);outline-offset:2px}
+.wa-fab{position:fixed;z-index:20;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:var(--wa);color:var(--wa-ink);display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.22);text-decoration:none;transition:transform .15s}
+.wa-fab:hover{transform:scale(1.06)}
+.wa-fab:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.wa-fab{transition:none}}
+footer{padding-block:28px 96px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--rule)}
+@media (max-width:820px){.hero,.two,.contact{grid-template-columns:1fr}.hero{gap:28px}}
+@media (prefers-reduced-motion:no-preference){.big{transition:color .2s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Borja Pérez <span>· Mediciones y presupuestos para estudios de arquitectura</span></div>
+    <div class="eyebrow">Arquitecto técnico</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Para estudios de arquitectura</div>
+      <h1 style="margin-top:14px">¿Cuánto le cuesta a tu estudio hacer cada <span class="mark">presupuesto</span>?</h1>
+      <p class="lead">Haz la cuenta con tus cifras y compárala con encargármelo a mí: lo que os ahorráis y las horas que os quedan libres para proyectar.</p>
+    </div>
+
+    <div class="calc" role="group" aria-labelledby="calc-title">
+      <div class="calc-head"><span id="calc-title">Calcula cuánto os cuesta cada presupuesto</span></div>
+      <div class="calc-body">
+        <div class="field">
+          <label for="m">PEM del proyecto</label><output for="m" id="m-o">250.000 €</output>
+          <input id="m" type="range" min="50000" max="800000" step="10000" value="250000">
+        </div>
+        <div class="field">
+          <label for="h">Horas que os lleva hacer mediciones y presupuesto</label><output for="h" id="h-o">60 h</output>
+          <input id="h" type="range" min="10" max="200" step="5" value="60">
+        </div>
+        <div class="field">
+          <label for="c">Coste de una hora de vuestro estudio</label><output for="c" id="c-o">40 €/h</output>
+          <input id="c" type="range" min="15" max="90" step="1" value="40">
+          <small>Sueldo, seguridad social y gastos del estudio, por hora.</small>
+        </div>
+        <div class="field">
+          <label for="n">Proyectos al año</label><output for="n" id="n-o">10</output>
+          <input id="n" type="range" min="1" max="40" step="1" value="10">
+        </div>
+      </div>
+      <div class="result result3" aria-live="polite">
+        <div class="res">
+          <div class="eyebrow">En vuestro estudio</div>
+          <div class="big" id="r-home">1.050 €</div>
+          <p><span id="r-h">30 h</span> de trabajo por proyecto.</p>
+        </div>
+        <div class="res">
+          <div class="eyebrow">Conmigo</div>
+          <div class="big" id="r-me"><span class="approx">≈</span>1.500 €</div>
+          <p>Estimación orientativa, 0,6 % del PEM.</p>
+        </div>
+        <div class="res res-hit">
+          <div class="eyebrow">Os ahorráis al año</div>
+          <div class="big" id="r-save">6.500 €</div>
+          <p id="r-save-p">y <strong>600 horas</strong> (15 semanas) libres para proyectar.</p>
+        </div>
+      </div>
+      <div class="note">Mi precio en la calculadora es solo una estimación: el precio real depende de cada proyecto y te lo doy al verlo. Los valores de partida son un ejemplo: ajústalos a tu estudio.</div>
+    </div>
+  </section>
+
+  <section class="svc" aria-labelledby="svc-title">
+    <div class="eyebrow">El servicio</div>
+    <h2 id="svc-title" class="svc-title">Tú me pasas planos y memoria.<br>Yo te devuelvo <span class="mark">todo esto</span>.</h2>
+    <div class="flow">
+      <div class="in">
+        <div class="eyebrow">Me envías</div>
+        <ul><li>Planos</li><li>Memoria</li><li>Calidades</li></ul>
+      </div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div class="out">
+        <article class="deliv">
+          <h3>Mediciones detalladas</h3>
+          <p>Por capítulos y partidas, con cada línea de medición desglosada para que cualquiera pueda comprobarla.</p>
+          <div class="fmt"><span>BC3</span><span>PDF</span></div>
+        </article>
+        <article class="deliv">
+          <h3>Presupuesto de ejecución material</h3>
+          <p>Partidas con su precio unitario e importe, y resumen por capítulos, listo para el proyecto de ejecución.</p>
+          <div class="fmt"><span>BC3</span><span>PDF</span></div>
+        </article>
+        <article class="deliv">
+          <h3>Planos de medición</h3>
+          <p>Un plano por capítulo, cada partida en un color con su leyenda. Se ve de un vistazo qué se ha medido.</p>
+          <div class="fmt"><span>DWG</span><span>PDF</span></div>
+        </article>
+        <article class="deliv">
+          <h3>Precio y plazo cerrados</h3>
+          <p>Antes de empezar, en 24 horas. Sin sorpresas para tu estudio.</p>
+          <div class="fmt"><span>24 h</span></div>
+        </article>
+      </div>
+    </div>
+    <div class="vs" role="table" aria-label="Medir en el estudio frente a encargármelo">
+      <div class="vs-row vs-head" role="row"><div role="columnheader">Medir en el estudio</div><div role="columnheader">Conmigo</div></div>
+      <div class="vs-row" role="row"><div role="cell">Horas de arquitecto que se quitan a proyectar</div><div role="cell">Precio cerrado antes de empezar</div></div>
+      <div class="vs-row" role="row"><div role="cell">Se hace cuando queda un hueco</div><div role="cell">Plazo cerrado antes de empezar</div></div>
+      <div class="vs-row" role="row"><div role="cell">Precios de bases de datos genéricas</div><div role="cell">Precios contrastados con lo que ofertan las constructoras</div></div>
+      <div class="vs-row" role="row"><div role="cell">El diseño se para mientras se mide</div><div role="cell">Tú sigues proyectando</div></div>
+    </div>
+  </section>
+
+  <section id="entrega">
+    <div class="eyebrow">Lo que recibe tu estudio</div>
+    <h2 style="margin-top:12px">Un plano por capítulo con todo lo medido, partida a partida.</h2>
+    <p style="color:var(--muted);margin-top:14px">Cada color es una partida del presupuesto. Tu estudio comprueba de un vistazo qué se ha medido y dónde. Se entregan en DWG y PDF junto con el presupuesto.</p>
+    <div class="tabs" role="tablist" aria-label="Planos de medición de ejemplo">
+      <button class="tab" role="tab" id="t-estructura" aria-controls="viewer" aria-selected="true" data-img="plano-estructura.jpg" data-alt="Plano de mediciones del capítulo de estructura: cimentación, forjados y cubiertas, con cada partida en un color"><img src="mini-estructura.jpg" alt=""><small>Plano de mediciones</small><span>Estructura</span></button>
+      <button class="tab" role="tab" id="t-albanileria" aria-controls="viewer" aria-selected="false" tabindex="-1" data-img="plano-albanileria.jpg" data-alt="Plano de mediciones del capítulo de albañilería: cerramientos, trasdosados y tabiquería, con cada partida en un color"><img src="mini-albanileria.jpg" alt=""><small>Plano de mediciones</small><span>Albañilería</span></button>
+      <button class="tab" role="tab" id="t-acabados" aria-controls="viewer" aria-selected="false" tabindex="-1" data-img="plano-acabados.jpg" data-alt="Plano de mediciones del capítulo de acabados: solados, alicatados y pinturas, con cada partida en un color"><img src="mini-acabados.jpg" alt=""><small>Plano de mediciones</small><span>Acabados</span></button>
+    </div>
+    <div class="viewer" id="viewer" role="tabpanel" aria-labelledby="t-estructura">
+      <img id="viewer-img" src="plano-estructura.jpg" alt="Plano de mediciones del capítulo de estructura: cimentación, forjados y cubiertas, con cada partida en un color" width="2481" height="1754">
+    </div>
+    <div class="viewer-foot"><span>Ejemplo de una vivienda unifamiliar.</span></div>
+  </section>
+
+  <section>
+    <div class="two">
+      <div>
+        <div class="eyebrow">Por qué yo</div>
+        <h2 style="margin-top:12px">Vengo de obra y de constructora. Sé lo que <span class="mark">cuesta</span> de verdad.</h2>
+      </div>
+      <div style="display:grid;gap:16px">
+        <p>He gestionado obra, presupuestos y control de costes desde el lado de quien ejecuta. Por eso mis precios se parecen a los que tu cliente verá cuando pida ofertas.</p>
+        <p>Menos desviaciones entre proyecto y obra significan menos llamadas incómodas del cliente y menos precios contradictorios.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Cómo funciona</div>
+    <ol class="steps">
+      <li><h3>Me envías la documentación</h3><p>Planos, memoria y lo que tengas de calidades.</p></li>
+      <li><h3>Precio y plazo cerrados</h3><p>Te los doy en 24 horas, sin compromiso.</p></li>
+      <li><h3>Recibes el presupuesto</h3><p>Mediciones y presupuesto en BC3 y PDF, y planos de medición en DWG y PDF.</p></li>
+      <li><h3>Ajustes hasta cerrar</h3><p>Si cambia el proyecto, actualizo las partidas afectadas.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="eyebrow">Otros servicios</div>
+    <h2 style="margin-top:12px">Además del presupuesto completo, también puedo ayudarte con:</h2>
+    <div class="grid">
+      <div><h3>Revisión de un presupuesto</h3><p>Una segunda mirada antes de que el proyecto salga a constructoras.</p></div>
+      <div><h3>Comparativo de ofertas</h3><p>Ordeno y comparo las ofertas que recibe tu cliente partida a partida, para que elija con datos.</p></div>
+      <div><h3>Picos de trabajo</h3><p>Para las semanas en que coinciden entregas y no llegáis a todo.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="contact">
+      <div style="display:grid;gap:14px">
+        <h2>¿Tienes algún proyecto sobre la mesa?</h2>
+        <p style="color:var(--muted)">Envíamelo y te digo precio y plazo. Si no encaja, no pasa nada.</p>
+      </div>
+      <div class="card">
+        <div><div class="who">Borja Pérez</div><div class="role">Arquitecto técnico · Mediciones y presupuestos</div></div>
+        <a class="wa" href="https://wa.me/34711592865?text=Hola%20Borja%2C%20he%20visto%20tu%20p%C3%A1gina%20de%20mediciones%20y%20presupuestos%20y%20quer%C3%ADa%20consultarte%20un%20proyecto." target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.66 15l-1.3 4.76 4.88-1.28A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-2.9.76.78-2.83-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.23-.08-.39-.12-.56.12-.16.25-.64.8-.78.97-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.66.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.74 2.66 4.22 3.73.59.25 1.05.4 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.46-.6 1.67-1.18.2-.58.2-1.07.14-1.18-.06-.1-.22-.16-.47-.29z"/></svg>
+          Escríbeme por WhatsApp
+        </a>
+        <div class="line"><span id="tel">711 592 865</span><button class="copy" data-copy="tel" type="button">Copiar</button></div>
+        <div class="line"><span id="mail">borjaperezagreda@gmail.com</span><button class="copy" data-copy="mail" type="button">Copiar</button></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Borja Pérez · Arquitecto técnico</footer>
+</div>
+
+<a class="wa-fab" href="https://wa.me/34711592865?text=Hola%20Borja%2C%20he%20visto%20tu%20p%C3%A1gina%20de%20mediciones%20y%20presupuestos%20y%20quer%C3%ADa%20consultarte%20un%20proyecto." target="_blank" rel="noopener" aria-label="Escríbeme por WhatsApp" title="Escríbeme por WhatsApp"><svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.66 15l-1.3 4.76 4.88-1.28A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.18-1.14l-.3-.18-2.9.76.78-2.83-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.14c-.25-.12-1.46-.72-1.69-.8-.23-.08-.39-.12-.56.12-.16.25-.64.8-.78.97-.14.16-.29.18-.53.06-.25-.12-1.04-.38-1.98-1.22-.73-.65-1.23-1.46-1.37-1.7-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.16-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.42-.56-.43h-.48c-.16 0-.43.06-.66.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.74 2.66 4.22 3.73.59.25 1.05.4 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.46-.6 1.67-1.18.2-.58.2-1.07.14-1.18-.06-.1-.22-.16-.47-.29z"/></svg></a>
+<script>
+(function(){
+  const grp=x=>Math.round(x).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+  const dec=x=>x.toFixed(1).replace('.',',').replace(/,0$/,'');
+  const g=id=>+document.getElementById(id).value;
+  const set=(id,t)=>document.getElementById(id).textContent=t;
+  // TARIFA ORIENTATIVA (prueba): porcentaje del PEM
+  const PCT_PEM=0.006;
+  function calc(){
+    const m=g('m'),h=g('h'),c=g('c'),n=g('n');
+    set('m-o',grp(m)+' €');set('h-o',h+' h');set('c-o',c+' €/h');set('n-o',n);
+    const home=h*c, me=Math.round(m*PCT_PEM/10)*10, save=(home-me)*n, hours=h*n, weeks=Math.round(hours/40);
+    set('r-home',grp(home)+' €');set('r-h',h+' h');document.getElementById('r-me').innerHTML='<span class="approx">≈</span>'+grp(me)+' €';
+    const wk=(weeks<1?'menos de 1 semana':grp(weeks)+(weeks===1?' semana':' semanas'));
+    const pe=document.getElementById('r-save-p');
+    if(save>0){
+      set('r-save',grp(save)+' €');
+      pe.innerHTML='y <strong>'+grp(hours)+' horas</strong> ('+wk+') libres para proyectar.';
+    }else{
+      set('r-save',grp(hours)+' h');
+      pe.innerHTML='libres para proyectar: '+wk+' de trabajo de una persona.';
+    }
+  }
+  ['m','h','c','n'].forEach(id=>document.getElementById(id).addEventListener('input',calc));
+  calc();
+  const tabs=[...document.querySelectorAll('.tab')],img=document.getElementById('viewer-img'),panel=document.getElementById('viewer');
+  function pick(t,focus){tabs.forEach(x=>{const on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1});img.src=t.dataset.img;img.alt=t.dataset.alt;panel.setAttribute('aria-labelledby',t.id);if(focus)t.focus()}
+  tabs.forEach((t,i)=>{t.addEventListener('click',()=>pick(t));t.addEventListener('keydown',e=>{const d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){e.preventDefault();pick(tabs[(i+d+tabs.length)%tabs.length],true)}})});
+  tabs.forEach(t=>{const p=new Image();p.src=t.dataset.img});
+  document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{
+    const el=document.getElementById(b.dataset.copy),t=el.textContent;
+    const done=()=>{b.textContent='Copiado';setTimeout(()=>b.textContent='Copiar',1500)};
+    const sel=()=>{const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Seleccionado'};
+    try{navigator.clipboard.writeText(t).then(done,sel)}catch(e){sel()}
+  }));
+})();
+</script>
+
+</body>
+</html>
