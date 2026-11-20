@@ -193,8 +193,8 @@ footer{padding-block:28px 96px;color:var(--muted);font-size:.85rem;border-top:1p
         </div>
         <div class="res">
           <div class="eyebrow">Conmigo</div>
-          <div class="big" id="r-me"><span class="approx">≈</span>1.500 €</div>
-          <p>Estimación orientativa, 0,6 % del PEM.</p>
+          <div class="big" id="r-me"><span class="approx">≈</span>1.000 €</div>
+          <p>Estimación orientativa, 0,4 % del PEM.</p>
         </div>
         <div class="res res-hit">
           <div class="eyebrow">Os ahorráis al año</div>
@@ -324,7 +324,7 @@ footer{padding-block:28px 96px;color:var(--muted);font-size:.85rem;border-top:1p
   const g=id=>+document.getElementById(id).value;
   const set=(id,t)=>document.getElementById(id).textContent=t;
   // TARIFA ORIENTATIVA (prueba): porcentaje del PEM
-  const PCT_PEM=0.006;
+  const PCT_PEM=0.004;
   function calc(){
     const m=g('m'),h=g('h'),c=g('c'),n=g('n');
     set('m-o',grp(m)+' €');set('h-o',h+' h');set('c-o',c+' €/h');set('n-o',n);
